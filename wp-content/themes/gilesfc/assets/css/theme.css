@@ -1,0 +1,547 @@
+/* ==========================================================================
+   Giles Financial Consulting — theme.css
+   Consulting-template system: white canvas, ONE brand color doing the heavy
+   lifting (full-bleed bands, filled buttons, eyebrow labels, icons, stat tiles),
+   a light-gray surface for alternate sections, image cards with gradient
+   overlays, pill buttons, a floating pill nav, and fade-up scroll reveals.
+   Tokens live in theme.json. Every component reads its colors from the
+   context variables below, so a section is "light" or "dark" by class alone.
+   ========================================================================== */
+
+:root {
+	--r-sm: 10px;
+	--r: 15px;
+	--pill: 999px;
+	--ease: cubic-bezier(0.22, 1, 0.36, 1);        /* fade-up: overdamped spring (220/60) */
+	--ease-fade: cubic-bezier(0.44, 0, 0.56, 1);   /* plain opacity fades */
+	--ease-hover: cubic-bezier(0.2, 0.8, 0.2, 1);  /* hover: stiff spring (500/60) */
+	--t-hover: 0.35s;
+	--gutter: clamp(20px, 3.5vw, 50px);
+	--nav-top: 25px;
+	--nav-h: 90px;
+	--shadow-card: 0 0.6px 1.6px -1.5px rgba(0, 0, 0, 0.17), 0 2.3px 6px -3px rgba(0, 0, 0, 0.14), 0 10px 26px -4.5px rgba(0, 0, 0, 0.06);
+	--overlay: linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.7) 100%);
+	--overlay-hover: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.85) 100%);
+
+	/* Light context (default: white sections) */
+	--text: var(--wp--preset--color--ink);
+	--text-muted: var(--wp--preset--color--slate);
+	--line: var(--wp--preset--color--line);
+	--card-bg: var(--wp--preset--color--surface);
+	--card-bg-hover: #e8e8e8;
+	--pill-bg: var(--wp--preset--color--surface);
+	--icon-bg: var(--wp--preset--color--brand);
+	--accent: var(--wp--preset--color--brand);
+	--btn-outline: rgba(0, 0, 0, 0.6);
+
+	--check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+	--arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E");
+	--arrow-white: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E");
+	--plus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M12 5v14M5 12h14'/%3E%3C/svg%3E");
+}
+
+/* Dark contexts: brand bands, photo heroes, footer */
+.has-brand-background-color,
+.gfc-hero,
+.gfc-founder-band,
+.gfc-page-hero,
+.gfc-header,
+.gfc-on-dark {
+	--text: #fff;
+	--text-muted: var(--wp--preset--color--mist);
+	--line: rgba(255, 255, 255, 0.2);
+	--card-bg: rgba(0, 0, 0, 0.2);
+	--card-bg-hover: rgba(0, 0, 0, 0.3);
+	--pill-bg: rgba(255, 255, 255, 0.2);
+	--icon-bg: rgba(255, 255, 255, 0.2);
+	--accent: #fff;
+	--btn-outline: rgba(255, 255, 255, 0.7);
+	color: #fff;
+}
+/* Gray surface sections: cards become white */
+.has-surface-background-color {
+	--card-bg: #fff;
+	--card-bg-hover: #fff;
+	--pill-bg: #fff;
+}
+
+html { scroll-behavior: smooth; scroll-padding-top: 40px; }
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; overflow-x: clip; }
+::selection { background: var(--wp--preset--color--brand); color: #fff; }
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline: 2px solid var(--wp--preset--color--gold); outline-offset: 3px; border-radius: 6px; }
+img { max-width: 100%; height: auto; }
+p { text-wrap: pretty; }
+h1, h2, h3 { text-wrap: balance; }
+
+/* Headings take the context text color, paragraphs the muted one. :where() keeps
+   specificity at zero so block color classes and helpers still win. */
+:where(h1, h2, h3, h4, h5, h6) { color: var(--text); }
+:where(p, li, dd, .wp-block-post-excerpt) { color: var(--text-muted); }
+:where(h1, h2, h3) em { font-style: normal; font-weight: inherit; color: inherit; }
+
+@media (prefers-reduced-motion: reduce) {
+	html { scroll-behavior: auto; }
+	*, *::before, *::after { transition: none !important; animation: none !important; }
+	.gfc-marquee { -webkit-mask-image: none; mask-image: none; overflow-x: auto; }
+}
+
+/* ---------- Rhythm ------------------------------------------------------- */
+
+body .wp-site-blocks > * + *,
+body .wp-site-blocks > main > * + *,
+body .wp-block-post-content > .alignfull,
+body .wp-block-post-content > .alignfull + * { margin-block-start: 0; }
+.wp-site-blocks { position: relative; }
+section.wp-block-group.alignfull { position: relative; }
+
+/* ---------- Type helpers ------------------------------------------------- */
+
+.gfc-section-head { max-width: 40rem; margin-bottom: var(--wp--preset--spacing--50); }
+.gfc-section-head.is-centered { margin-inline: auto; text-align: center; }
+.gfc-section-head > * + * { margin-block-start: 20px; }
+.gfc-section-head h2 { margin-block-start: 20px; }
+
+/* Eyebrow: short line + label in the accent color ("Our services" style) */
+.eyebrow {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	width: fit-content;
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 500;
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	color: var(--accent);
+}
+.eyebrow::before { content: ""; display: block; width: 50px; height: 1px; background: currentColor; flex-shrink: 0; }
+.eyebrow.has-text-align-center, .gfc-section-head.is-centered .eyebrow { margin-inline: auto; }
+
+.gfc-lead {
+	font-size: var(--wp--preset--font-size--medium);
+	font-weight: 400;
+	line-height: 1.7;
+	color: var(--text-muted);
+	max-width: 36em;
+}
+.has-text-align-center.gfc-lead { margin-inline: auto; }
+.gfc-muted { color: var(--text-muted); }
+.gfc-small { font-size: var(--wp--preset--font-size--small); }
+
+/* Numbered labels ("01") on service blocks and cards */
+.gfc-num {
+	display: flex; align-items: center; gap: 15px; margin: 0;
+	font-size: 1rem; font-weight: 500; letter-spacing: -0.01em;
+	color: var(--accent) !important;
+}
+.gfc-num::after { content: ""; width: 50px; height: 1px; background: currentColor; }
+
+/* ---------- Buttons ------------------------------------------------------ */
+
+.wp-block-button__link, .gfc-form button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	white-space: nowrap;
+	transition: opacity var(--t-hover) var(--ease-hover), background-color var(--t-hover) var(--ease-hover), color var(--t-hover) var(--ease-hover), border-color var(--t-hover) var(--ease-hover);
+}
+.wp-block-button__link:hover, .gfc-form button:hover { opacity: 0.6; }
+
+/* Outline variants read the context: dark border on white, white border on dark */
+.wp-block-button.is-style-outline .wp-block-button__link,
+.wp-block-button.is-style-outline-light .wp-block-button__link {
+	background: transparent;
+	color: var(--text);
+	border: 1px solid var(--btn-outline);
+}
+
+/* Filled buttons on brand bands flip to white so they stay visible */
+.has-brand-background-color .wp-block-button:not(.is-style-outline):not(.is-style-outline-light) .wp-block-button__link,
+.has-brand-background-color .gfc-form button {
+	background: #fff;
+	color: var(--wp--preset--color--brand);
+}
+
+.gfc-link-arrow a {
+	display: inline-flex; align-items: center; gap: 10px;
+	font-weight: 500; text-decoration: none; color: var(--text);
+	transition: opacity var(--t-hover) var(--ease-hover);
+}
+.gfc-link-arrow a::after { content: ""; width: 1em; height: 1em; background: currentColor; mask: var(--arrow) center / contain no-repeat; -webkit-mask: var(--arrow) center / contain no-repeat; transition: transform var(--t-hover) var(--ease-hover); }
+.gfc-link-arrow a:hover { opacity: 0.6; }
+.gfc-link-arrow a:hover::after { transform: translateX(4px); }
+
+/* ---------- Header: floating pill nav over the hero --------------------- */
+
+.wp-site-blocks > header.wp-block-template-part { position: absolute; top: 0; left: 0; right: 0; z-index: 100; }
+.admin-bar .wp-site-blocks > header.wp-block-template-part { top: 46px; }
+@media (min-width: 783px) { .admin-bar .wp-site-blocks > header.wp-block-template-part { top: 32px; } }
+
+.gfc-header { padding: var(--nav-top) var(--gutter) 0 !important; background: transparent !important; }
+.gfc-header-pill {
+	background: rgba(0, 0, 0, 0.2);
+	border-radius: var(--pill);
+	padding: 15px 15px 15px 30px;
+	color: #fff;
+}
+.gfc-logo { margin: 0; flex-shrink: 0; line-height: 0; }
+.gfc-logo img { display: block; width: clamp(120px, 10vw, 140px); height: auto; }
+
+.gfc-header .wp-block-navigation { color: #fff; }
+/* Doubled class beats core's `.wp-block-navigation-item__content.wp-block-navigation-item__content { color: inherit }` */
+.gfc-header .wp-block-navigation a,
+.gfc-header .wp-block-navigation .wp-block-navigation-item__content.wp-block-navigation-item__content { text-decoration: none; color: #fff; transition: opacity var(--t-hover) var(--ease-hover); }
+.gfc-header .wp-block-navigation .wp-block-navigation-item__content:hover,
+.gfc-header .wp-block-navigation .wp-block-navigation-item__content:focus-visible { opacity: 0.6; }
+.gfc-header .wp-block-navigation .wp-block-navigation__submenu-container {
+	min-width: 220px !important;
+	padding: 8px;
+	margin-top: 10px;
+	background: #fff !important;
+	border: 0 !important;
+	border-radius: var(--r-sm);
+	box-shadow: var(--shadow-card);
+	color: var(--wp--preset--color--ink) !important;
+}
+.gfc-header .wp-block-navigation .wp-block-navigation__submenu-container .wp-block-navigation-item__content { padding: 10px 14px; border-radius: 6px; color: var(--wp--preset--color--ink) !important; opacity: 1; }
+.gfc-header .wp-block-navigation .wp-block-navigation__submenu-container .wp-block-navigation-item__content:hover { background: var(--wp--preset--color--surface); opacity: 1; }
+.gfc-header .wp-block-navigation__submenu-icon { color: #fff; }
+.gfc-header .wp-block-navigation__responsive-container:not(.is-menu-open) .gfc-nav-cta { display: none; }
+.gfc-header-cta .wp-block-button__link { padding: 12px 24px; }
+
+/* Hamburger from 900px down (core only does it at 600px) */
+.gfc-header .wp-block-navigation__responsive-container-open { color: #fff; }
+.gfc-header .wp-block-navigation__responsive-container-open svg { width: 28px; height: 28px; }
+@media (max-width: 899px) {
+	.gfc-header .wp-block-navigation__responsive-container-open:not(.always-shown) { display: flex; }
+	.gfc-header .wp-block-navigation__responsive-container:not(.hidden-by-default):not(.is-menu-open) { display: none; }
+	.gfc-header-cta { display: none !important; }
+	.gfc-header-pill { padding: 12px 15px 12px 24px; }
+}
+/* Mobile overlay: white sheet, black links */
+.gfc-header .wp-block-navigation__responsive-container.is-menu-open {
+	padding: 2rem var(--gutter);
+	background: #fff !important;
+	color: var(--wp--preset--color--ink) !important;
+}
+.gfc-header .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__responsive-container-content { padding-top: 3.5rem; }
+.gfc-header .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__container,
+.gfc-header .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__submenu-container { align-items: flex-start; gap: 1rem; margin-left: 0 !important; margin-right: auto !important; width: 100%; text-align: left; }
+.gfc-header .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation-item { justify-content: flex-start; align-items: flex-start !important; width: 100%; }
+.gfc-header .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation-item__content { font-size: 1.75rem; font-weight: 500; letter-spacing: -0.02em; color: var(--wp--preset--color--ink) !important; opacity: 1; }
+.gfc-header .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__submenu-container { background: transparent !important; box-shadow: none; padding: 0.25rem 0 0.25rem 1rem !important; margin: 0; border-left: 1px solid var(--wp--preset--color--line) !important; border-radius: 0; }
+.gfc-header .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__submenu-container .wp-block-navigation-item__content { font-size: 1.1rem; padding: 0.4rem 0; }
+.gfc-header .wp-block-navigation__responsive-container.is-menu-open .gfc-nav-cta .wp-block-navigation-item__content { color: var(--wp--preset--color--brand) !important; }
+.gfc-header .wp-block-navigation__responsive-container-close { color: var(--wp--preset--color--ink); }
+.gfc-header .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__submenu-icon { color: var(--wp--preset--color--ink); }
+
+/* ---------- Hero (home): full-bleed photo, 50% black overlay, parallax ---- */
+
+.gfc-hero {
+	min-height: clamp(600px, 100vh, 1000px) !important;
+	padding: calc(var(--nav-top) + var(--nav-h) + 40px) var(--gutter) 50px !important;
+	display: flex;
+	align-items: center;
+	overflow: hidden;
+	isolation: isolate;
+}
+.gfc-hero .wp-block-cover__image-background { object-position: 65% center; will-change: transform; }
+.gfc-hero .wp-block-cover__inner-container { width: 100%; max-width: var(--wp--style--global--wide-size); margin-inline: auto; will-change: transform; }
+.gfc-hero h1 { margin: 0; max-width: 11ch; color: #fff; }
+.gfc-hero .gfc-lead { margin-block-start: 25px; color: var(--wp--preset--color--mist); max-width: 34em; }
+.gfc-hero .wp-block-buttons { margin-block-start: 40px; gap: 10px; }
+@media (max-width: 781px) {
+	.gfc-hero { min-height: clamp(560px, 92vh, 800px) !important; padding-top: calc(var(--nav-top) + 80px + 30px) !important; padding-bottom: 30px !important; }
+	.gfc-hero .wp-block-cover__image-background { object-position: 70% center; }
+	.gfc-hero h1 { max-width: none; }
+}
+
+/* Inner-page hero: brand band under the floating nav */
+.gfc-page-hero { padding-top: calc(var(--nav-top) + var(--nav-h) + 60px) !important; padding-bottom: 80px !important; }
+.gfc-page-hero h1 { margin-block: 20px 0; max-width: 14ch; }
+.gfc-page-hero.has-text-align-center h1, .gfc-page-hero .has-text-align-center { margin-inline: auto; }
+.gfc-page-hero .gfc-lead { margin-block-start: 20px; }
+.gfc-page-hero .eyebrow { color: var(--wp--preset--color--mist); }
+
+/* ---------- Logo / name strip under the hero ----------------------------- */
+
+.gfc-strip { padding-top: 25px !important; padding-bottom: 25px !important; border-bottom: 1px solid var(--line); }
+.gfc-strip-label { flex-shrink: 0; margin: 0; font-size: 0.8125rem !important; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted) !important; }
+.gfc-cred-names { gap: 0 !important; flex-wrap: nowrap !important; }
+.gfc-cred-names p { margin: 0; white-space: nowrap; font-size: clamp(1.1rem, 1rem + 0.5vw, 1.35rem); font-weight: 500; letter-spacing: -0.02em; color: var(--text); opacity: 0.4; transition: opacity var(--t-hover) var(--ease-hover); }
+.gfc-cred-names p:hover { opacity: 1; }
+
+.gfc-marquee { overflow: hidden; min-width: 0; flex: 1 1 auto; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.gfc-marquee__track { display: flex; align-items: center; width: max-content; gap: var(--marquee-gap, 2rem); }
+.gfc-cred-names .gfc-marquee__track { --marquee-gap: 4rem; }
+.gfc-chips-marquee .gfc-marquee__track { --marquee-gap: 10px; }
+.gfc-marquee.is-running .gfc-marquee__track { animation: gfc-marquee var(--marquee-duration, 30s) linear infinite; }
+.gfc-marquee:hover .gfc-marquee__track { animation-play-state: paused; }
+@keyframes gfc-marquee { to { transform: translateX(-50%); } }
+
+/* Keyword chips band (brand): translucent white pills */
+.gfc-chips-marquee { gap: 10px !important; }
+.gfc-chips-marquee p {
+	margin: 0; white-space: nowrap; padding: 12px 22px; border-radius: var(--pill);
+	background: var(--pill-bg); font-size: 1rem; font-weight: 500; letter-spacing: -0.01em; color: var(--text);
+}
+
+/* ---------- Cards -------------------------------------------------------- */
+
+.is-style-card {
+	position: relative;
+	height: 100%;
+	box-sizing: border-box;
+	padding: clamp(24px, 1.25rem + 1.2vw, 40px);
+	background: var(--card-bg);
+	border-radius: var(--r-sm);
+	transition: background-color var(--t-hover) var(--ease-hover), box-shadow var(--t-hover) var(--ease-hover);
+}
+.is-style-card > * + * { margin-block-start: 15px; }
+.is-style-card h3 { font-size: var(--wp--preset--font-size--x-large); }
+.is-style-card p { font-size: 1rem; line-height: 1.65; }
+.is-style-card:hover { background: var(--card-bg-hover); }
+.has-surface-background-color .is-style-card { box-shadow: var(--shadow-card); }
+
+.gfc-more { margin-top: 20px !important; }
+.gfc-more a { display: inline-flex; align-items: center; gap: 10px; font-weight: 500; font-size: 1rem; text-decoration: none; color: var(--text) !important; transition: opacity var(--t-hover) var(--ease-hover); }
+.gfc-more a::before { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.gfc-more a::after { content: ""; width: 1em; height: 1em; background: currentColor; mask: var(--arrow) center / contain no-repeat; -webkit-mask: var(--arrow) center / contain no-repeat; transition: transform var(--t-hover) var(--ease-hover); }
+.is-style-card:hover .gfc-more a::after { transform: translateX(4px); }
+
+.gfc-grid { align-items: stretch; }
+
+/* Services: image cards with a gradient that deepens on hover */
+.gfc-bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
+.gfc-bento > * { grid-column: span 4; }
+.gfc-bento > .is-span-8 { grid-column: span 8; }
+.gfc-bento > .is-span-6 { grid-column: span 6; }
+.gfc-bento .is-style-card {
+	display: flex; flex-direction: column; justify-content: flex-end;
+	min-height: 360px; padding: 40px;
+	background: var(--wp--preset--color--ink); color: #fff;
+	border-radius: var(--r); overflow: hidden; isolation: isolate;
+	transition: none;
+}
+.gfc-bento .is-style-card > * { margin: 0; }
+.gfc-bento .is-style-card .wp-block-image { position: absolute; inset: 0; z-index: 0; margin: 0; }
+.gfc-bento .is-style-card .wp-block-image img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.gfc-bento .is-style-card::before, .gfc-bento .is-style-card::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.gfc-bento .is-style-card::before { background: var(--overlay); }
+.gfc-bento .is-style-card::after { background: var(--overlay-hover); opacity: 0; transition: opacity 0.4s var(--ease-hover); }
+.gfc-bento .is-style-card:hover::after { opacity: 1; }
+.gfc-bento .gfc-card-body { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 10px; padding-right: 64px; }
+.gfc-bento .gfc-card-body > * { margin: 0; }
+.gfc-bento h3 { color: #fff; font-size: var(--wp--preset--font-size--x-large); line-height: 1.3; }
+.gfc-bento .gfc-card-body > p:not(.gfc-more) { color: var(--wp--preset--color--mist); font-size: 1rem; line-height: 1.6; max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.5s var(--ease-hover), opacity 0.4s var(--ease-hover); }
+.gfc-bento .is-style-card:hover .gfc-card-body > p:not(.gfc-more) { max-height: 8em; opacity: 1; }
+.gfc-bento .gfc-more { margin: 0 !important; position: static; }
+.gfc-bento .gfc-more a { position: static; font-size: 0; color: transparent !important; }
+.gfc-bento .gfc-more a::before { z-index: 3; }
+.gfc-bento .gfc-more a::after {
+	position: absolute; right: 30px; bottom: 30px; z-index: 2;
+	width: 44px; height: 44px; border-radius: 50%;
+	mask: none; -webkit-mask: none;
+	background: rgba(255, 255, 255, 0.2) var(--arrow-white) center / 18px no-repeat;
+	transition: background-color var(--t-hover) var(--ease-hover);
+}
+.gfc-bento .is-style-card:hover .gfc-more a::after { background-color: rgba(255, 255, 255, 0.35); }
+@media (max-width: 1000px) { .gfc-bento > *, .gfc-bento > .is-span-8, .gfc-bento > .is-span-6 { grid-column: span 6; } .gfc-bento .is-style-card { min-height: 300px; padding: 30px; } }
+@media (max-width: 640px) { .gfc-bento > *, .gfc-bento > .is-span-8, .gfc-bento > .is-span-6 { grid-column: span 12; } .gfc-bento .is-style-card .gfc-card-body > p:not(.gfc-more) { max-height: none; opacity: 1; } }
+
+/* ---------- Lists -------------------------------------------------------- */
+
+ul.is-style-checks, ul.is-style-plain { list-style: none; padding-left: 0; }
+.is-style-checks li { position: relative; padding-left: 38px; margin-block: 12px; color: var(--text); }
+.is-style-checks li::before { content: ""; position: absolute; left: 0; top: 0.2em; width: 24px; height: 24px; border-radius: 5px; background: var(--icon-bg) var(--check) center / 14px no-repeat; }
+.is-style-plain li { margin-block: 0.5rem; }
+
+/* ---------- Feature grid (Why choose) ----------------------------------- */
+
+.gfc-feature { padding: 30px; border-radius: var(--r-sm); transition: background-color var(--t-hover) var(--ease-hover); }
+.gfc-feature:hover { background: var(--card-bg); }
+.gfc-feature :is(h3, h4) { margin: 0; font-size: var(--wp--preset--font-size--large); font-weight: 500; line-height: 1.3; }
+.gfc-feature :is(h3, h4)::before { content: ""; display: block; width: 50px; height: 50px; margin-bottom: 20px; border-radius: var(--r-sm); background: var(--icon-bg) var(--check) center / 24px no-repeat; }
+.gfc-feature p { margin-block-start: 10px; font-size: 1rem; line-height: 1.6; }
+
+/* ---------- Process (brand band, numbered cards) ------------------------ */
+
+.gfc-steps { counter-reset: gfc-step; }
+.gfc-step { counter-increment: gfc-step; position: relative; padding: 40px; border-radius: var(--r-sm); background: var(--card-bg); transition: background-color var(--t-hover) var(--ease-hover); }
+.gfc-step:hover { background: var(--card-bg-hover); }
+.gfc-step::before {
+	content: counter(gfc-step, decimal-leading-zero) ".";
+	display: block;
+	font-size: clamp(2.25rem, 2rem + 1vw, 3rem);
+	font-weight: 500;
+	line-height: 1;
+	letter-spacing: -0.03em;
+	color: var(--text);
+	margin-bottom: 40px;
+}
+.gfc-step :is(h3, h4) { margin: 0; font-size: var(--wp--preset--font-size--x-large); font-weight: 500; }
+.gfc-step p { margin-block-start: 10px; font-size: 1rem; line-height: 1.6; }
+@media (max-width: 640px) { .gfc-step { padding: 30px; } .gfc-step::before { margin-bottom: 24px; } }
+
+/* ---------- Images ------------------------------------------------------- */
+
+.gfc-media, .gfc-portrait { margin: 0; position: relative; }
+.gfc-media img, .gfc-portrait img { display: block; width: 100%; border-radius: var(--r); object-fit: cover; }
+.gfc-media img { aspect-ratio: 4 / 3; }
+.gfc-media.is-tall img { aspect-ratio: 4 / 5; }
+.gfc-portrait img { aspect-ratio: 1; object-position: center 20%; }
+
+/* ---------- Founder band: full-bleed photo, copy pinned to the bottom ---- */
+
+.gfc-founder-band { position: relative; isolation: isolate; min-height: clamp(600px, 85vh, 820px); display: flex; align-items: flex-end; padding-top: 200px !important; }
+.gfc-founder-band > .gfc-founder-img { position: absolute; inset: 0; margin: 0 !important; max-width: none !important; width: auto; z-index: -1; }
+.gfc-founder-band .gfc-founder-img img { width: 100%; height: 100%; object-fit: cover; object-position: 60% 20%; filter: brightness(0.5); }
+.gfc-founder-band .gfc-founder-img::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.45) 100%); }
+.gfc-founder-copy .gfc-lead { max-width: 30em; }
+.gfc-quote { margin: 25px 0; padding: 0 0 0 20px; border-left: 2px solid rgba(255, 255, 255, 0.6); }
+.gfc-quote p { font-size: var(--wp--preset--font-size--large); font-style: italic; font-weight: 400; line-height: 1.5; color: #fff; }
+.gfc-quote cite { display: block; margin-top: 10px; font-style: normal; font-size: 0.875rem; color: var(--text-muted); }
+@media (max-width: 781px) { .gfc-founder-band { min-height: 0; padding-top: 320px !important; } .gfc-founder-band .gfc-founder-img img { object-position: 50% 15%; } }
+
+/* ---------- Posts: cover cards (date pill, title at the bottom) ---------- */
+
+.gfc-posts .wp-block-post {
+	position: relative; display: flex; flex-direction: column; justify-content: flex-end;
+	aspect-ratio: 4 / 5; min-height: 360px; padding: 30px;
+	border-radius: var(--r-sm); overflow: hidden; isolation: isolate;
+	background: var(--wp--preset--color--ink); color: #fff;
+}
+.gfc-posts .wp-block-post > * { position: relative; z-index: 2; margin: 0; }
+.gfc-posts .wp-block-post-featured-image { position: absolute; inset: 0; z-index: 0; }
+.gfc-posts .wp-block-post-featured-image a, .gfc-posts .wp-block-post-featured-image img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.gfc-posts .wp-block-post::before, .gfc-posts .wp-block-post::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.gfc-posts .wp-block-post::before { background: var(--overlay); }
+.gfc-posts .wp-block-post::after { background: var(--overlay-hover); opacity: 0; transition: opacity 0.4s var(--ease-hover); }
+.gfc-posts .wp-block-post:hover::after { opacity: 1; }
+.gfc-posts .wp-block-post-date { position: absolute; top: 20px; left: 20px; padding: 6px 12px; border-radius: var(--pill); background: #fff; color: var(--wp--preset--color--ink); font-size: 0.75rem; font-weight: 500; line-height: 1.2; }
+.gfc-posts .wp-block-post-title { font-size: var(--wp--preset--font-size--x-large); line-height: 1.3; font-weight: 500; color: #fff; }
+.gfc-posts .wp-block-post-title a { color: #fff; }
+.gfc-posts .wp-block-post-title a::after { content: ""; position: absolute; inset: 0; z-index: 3; }
+.gfc-posts .wp-block-post-excerpt { margin-top: 10px; font-size: 0.9375rem; line-height: 1.55; color: var(--wp--preset--color--mist); }
+.gfc-posts .wp-block-post-excerpt__excerpt { margin: 0; }
+.gfc-posts .wp-block-post-excerpt__more-text { display: none; }
+.gfc-posts .wp-block-query-pagination { margin-top: var(--wp--preset--spacing--50); gap: 8px; font-weight: 500; }
+.gfc-posts .wp-block-query-pagination a, .gfc-posts .wp-block-query-pagination .current { display: inline-grid; place-items: center; min-width: 2.6rem; height: 2.6rem; padding-inline: 0.8rem; border-radius: var(--pill); text-decoration: none; color: var(--text); background: var(--card-bg); }
+.gfc-posts .wp-block-query-pagination .current { background: var(--wp--preset--color--brand); color: #fff; }
+
+/* ---------- Single post -------------------------------------------------- */
+
+.gfc-article .wp-block-post-featured-image img { border-radius: var(--r); aspect-ratio: 16 / 9; object-fit: cover; }
+.gfc-article .wp-block-post-content { font-size: var(--wp--preset--font-size--medium); line-height: 1.8; }
+.gfc-article .wp-block-post-content :is(h2, h3) { margin-block-start: 2.5rem; }
+.gfc-article .wp-block-post-content h2 { font-size: clamp(1.6rem, 1.35rem + 0.9vw, 2.1rem); }
+.gfc-article .wp-block-post-content h3 { font-size: clamp(1.3rem, 1.15rem + 0.5vw, 1.55rem); }
+.gfc-article .wp-block-post-content li + li { margin-top: 0.45rem; }
+.gfc-article .wp-block-post-content strong { color: var(--text); }
+.gfc-article .gfc-page-hero .wp-block-post-date { color: var(--wp--preset--color--mist); }
+.gfc-author { border-top: 1px solid var(--line); padding-top: 2rem; }
+.gfc-author .gfc-portrait img { width: 72px; height: 72px; border-radius: 50%; }
+
+/* ---------- FAQ ---------------------------------------------------------- */
+
+.wp-block-details summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; cursor: pointer; list-style: none; font-weight: 500; font-size: var(--wp--preset--font-size--large); letter-spacing: -0.02em; line-height: 1.35; color: var(--text); transition: opacity var(--t-hover) var(--ease-hover); }
+.wp-block-details summary::-webkit-details-marker { display: none; }
+.wp-block-details summary::after { content: ""; flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--card-bg) var(--plus) center / 14px no-repeat; transition: transform var(--t-hover) var(--ease-hover); }
+.gfc-on-dark .wp-block-details summary::after, .has-brand-background-color .wp-block-details summary::after { filter: invert(1); }
+.wp-block-details[open] summary::after { transform: rotate(45deg); }
+.wp-block-details summary:hover { opacity: 0.6; }
+.wp-block-details > :not(summary) { color: var(--text-muted); max-width: 62ch; }
+.wp-block-details > summary + * { margin-block-start: 15px; }
+.gfc-faq-group + .gfc-faq-group { margin-block-start: var(--wp--preset--spacing--50); }
+.gfc-faq-group h3 { margin-bottom: 10px; font-size: 1rem; font-weight: 500; letter-spacing: -0.01em; color: var(--accent); }
+@media (min-width: 782px) { .gfc-sticky { position: sticky; top: 40px; align-self: flex-start !important; } }
+
+/* ---------- Contact ------------------------------------------------------ */
+
+.gfc-contact-item { padding: 20px 0; border-bottom: 1px solid var(--line); }
+.gfc-contact-item > * { margin: 0; }
+.gfc-contact-item h3 { font-size: 1rem; font-weight: 500; letter-spacing: -0.01em; color: var(--accent); }
+.gfc-contact-item p { margin-top: 6px; font-size: var(--wp--preset--font-size--large); font-weight: 500; color: var(--text); }
+.gfc-contact-item a { text-decoration: none; color: inherit; }
+.gfc-contact-item a:hover { opacity: 0.6; }
+.gfc-form-card:hover { background: var(--card-bg); }
+.gfc-embed { min-height: 520px; background: #fff !important; box-shadow: var(--shadow-card); }
+
+/* ---------- Chips / prose ------------------------------------------------ */
+
+.gfc-chips { gap: 8px !important; }
+.gfc-chips p { margin: 0; padding: 8px 16px; border-radius: var(--pill); background: var(--pill-bg); font-size: 0.875rem; font-weight: 500; line-height: 1.3; color: var(--text); }
+.gfc-prose { line-height: 1.8; }
+.gfc-prose h2 { margin-block-start: 2.5rem; font-size: clamp(1.5rem, 1.3rem + 0.7vw, 1.9rem); }
+.gfc-prose h3 { margin-block-start: 1.75rem; font-size: var(--wp--preset--font-size--large); }
+.gfc-prose strong { color: var(--text); }
+
+/* ---------- Stats: brand tiles alternating with surface tiles ----------- */
+
+.gfc-stat { padding: 40px 30px; border-radius: var(--r-sm); background: var(--wp--preset--color--brand); color: #fff; text-align: left; }
+.gfc-stat:nth-child(even) { background: var(--wp--preset--color--surface); color: var(--wp--preset--color--ink); }
+.gfc-stat > * { margin: 0; color: inherit; }
+.gfc-stat .gfc-stat-num { font-size: clamp(2.5rem, 2rem + 1.5vw, 3.5rem); font-weight: 500; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.gfc-stat p:not(.gfc-stat-num) { margin-top: 15px; font-size: 1rem; opacity: 0.8; }
+
+/* ---------- CTA band (brand) -------------------------------------------- */
+
+.gfc-cta-band { text-align: center; }
+.gfc-cta-band .gfc-cta-card { position: relative; }
+.gfc-cta-band .gfc-cta-card > * { position: relative; }
+.gfc-cta-band h2 { max-width: 16ch; margin-inline: auto; }
+
+/* ---------- Footer (brand) ---------------------------------------------- */
+
+.gfc-footer { color: var(--wp--preset--color--mist); border-top: 1px solid rgba(255, 255, 255, 0.15); }
+.gfc-footer a { color: var(--wp--preset--color--mist) !important; text-decoration: none; transition: color var(--t-hover) var(--ease-hover); }
+.gfc-footer a:hover { color: #fff !important; }
+.gfc-footer h2 { margin: 0 0 15px; font-size: 1rem; font-weight: 500; letter-spacing: -0.01em; color: #fff; }
+.gfc-footer ul { margin: 0; font-size: 1rem; }
+.gfc-footer ul li { margin-block: 10px; }
+.gfc-footer p { font-size: 1rem; }
+.gfc-footer .gfc-logo img { width: 150px; }
+.gfc-footer .wp-block-social-links { gap: 10px; margin-top: 20px; }
+.gfc-footer .wp-block-social-links .wp-social-link { background: rgba(255, 255, 255, 0.2) !important; border-radius: 50%; transition: background-color var(--t-hover) var(--ease-hover); }
+.gfc-footer .wp-block-social-links .wp-social-link:hover { background: #fff !important; transform: none; }
+.gfc-footer .wp-block-social-links .wp-social-link a { padding: 0.55rem; }
+.gfc-footer .wp-block-social-links .wp-social-link:hover a { color: var(--wp--preset--color--brand) !important; }
+.gfc-footer-bottom { border-top: 1px solid rgba(255, 255, 255, 0.2); font-size: 0.875rem; }
+.gfc-footer-bottom p { margin: 0; font-size: 0.875rem; color: var(--wp--preset--color--mist); }
+
+/* ---------- Contact form ------------------------------------------------- */
+
+.gfc-form { display: grid; gap: 15px; }
+.gfc-form .gfc-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+@media (max-width: 600px) { .gfc-form .gfc-row { grid-template-columns: 1fr; } }
+.gfc-form label { display: block; margin-bottom: 6px; font-size: 0.9375rem; font-weight: 500; color: var(--text); }
+.gfc-form .gfc-optional { font-weight: 400; color: var(--text-muted); }
+.gfc-form input[type="text"], .gfc-form input[type="email"], .gfc-form input[type="tel"], .gfc-form select, .gfc-form textarea {
+	box-sizing: border-box; width: 100%; padding: 14px 16px; font: inherit; font-size: 1rem; color: var(--wp--preset--color--ink);
+	background: #fff; border: 1px solid var(--wp--preset--color--line); border-radius: var(--r-sm);
+	transition: border-color var(--t-hover) var(--ease-hover), box-shadow var(--t-hover) var(--ease-hover);
+}
+.gfc-form select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1rem; }
+.gfc-form textarea { min-height: 140px; resize: vertical; }
+.gfc-form :is(input, select, textarea):focus { outline: none; border-color: var(--wp--preset--color--brand); box-shadow: 0 0 0 3px rgba(19, 36, 86, 0.15); }
+.gfc-form .gfc-consent { display: flex; align-items: flex-start; gap: 10px; font-size: 0.875rem; font-weight: 400; line-height: 1.5; color: var(--text-muted); }
+.gfc-form .gfc-consent input { flex-shrink: 0; width: 1.05rem; height: 1.05rem; margin-top: 0.15rem; accent-color: var(--wp--preset--color--brand); }
+.gfc-form button { justify-self: start; cursor: pointer; border: 0; border-radius: var(--pill); padding: 15px 30px; font: inherit; font-size: 1rem; font-weight: 500; color: #fff; background: var(--wp--preset--color--brand); }
+.gfc-hp { position: absolute !important; left: -10000px !important; width: 1px; height: 1px; overflow: hidden; }
+.gfc-notice { padding: 1rem 1.25rem; border-radius: var(--r-sm); font-size: 1rem; line-height: 1.5; }
+.gfc-notice.is-success { background: #e8f5ec; color: #1f5a33; }
+.gfc-notice.is-error { background: #fbe9e9; color: #8a2424; }
+
+/* ---------- Misc --------------------------------------------------------- */
+
+.gfc-disclosure { font-size: 0.875rem; color: var(--text-muted); border-top: 1px solid var(--line); padding-top: 20px; }
+.gfc-404 h1 { font-size: clamp(5rem, 3rem + 10vw, 12rem); }
+
+/* ---------- Motion: fade-up 75px → 0 on a soft spring, staggered 200ms --- */
+
+.js:not(.reduce-motion) .gfc-reveal { opacity: 0; transform: translate3d(0, 75px, 0); transition: opacity 1s var(--ease), transform 1s var(--ease); transition-delay: var(--d, 0ms); will-change: opacity, transform; }
+.js:not(.reduce-motion) .gfc-reveal[data-from="fade"] { transform: none; transition: opacity 0.8s var(--ease-fade); transition-delay: var(--d, 0ms); }
+.js:not(.reduce-motion) .gfc-reveal.is-in { opacity: 1; transform: none; }
+
+.js:not(.reduce-motion) .gfc-hero .gfc-intro, .js:not(.reduce-motion) .gfc-strip.gfc-intro { opacity: 0; transform: translate3d(0, 75px, 0); transition: opacity 1s var(--ease), transform 1s var(--ease); transition-delay: var(--d, 0ms); }
+.js:not(.reduce-motion) .gfc-hero.is-ready .gfc-intro, .js:not(.reduce-motion) .gfc-strip.is-ready { opacity: 1; transform: none; }
